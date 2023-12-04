@@ -76,13 +76,11 @@ func ConversieNumereBinareHandler(w http.ResponseWriter, r *http.Request) {
 
 	rezultat := utils.ConversieNumereBinare(input)
 
-	// Prepare the response array with the first index as the answer
 	response := make([]string, 0)
 	if len(rezultat) > 0 {
 		response = append(response, fmt.Sprintf("%d", rezultat[0]))
 	}
 
-	// Add the rest of the converted values to the response array
 	for _, val := range rezultat[1:] {
 		response = append(response, fmt.Sprintf("%d", val))
 	}
@@ -277,7 +275,6 @@ func SumaDublarePrimaCifraHandler(w http.ResponseWriter, r *http.Request) {
 
 	suma := utils.SumaDublarePrimaCifra(input)
 
-	// Prepare the response array with the sum
 	response := []int{suma}
 
 	responseJSON, err := json.Marshal(response)

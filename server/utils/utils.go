@@ -49,10 +49,8 @@ func ConversieNumereBinare(input []string) []int {
 	var rezultat []int
 
 	for _, str := range input {
-		// Check if the string is a binary number
 		_, err := strconv.ParseInt(str, 2, 0)
 		if err == nil {
-			// Convert binary to decimal
 			decimalValue, _ := strconv.ParseInt(str, 2, 64)
 			rezultat = append(rezultat, int(decimalValue))
 		}
@@ -77,13 +75,11 @@ func isNumarVocalePare(word string) bool {
 	vowelCount := 0
 
 	for i, char := range word {
-		// Check if the position is even and the character is a vowel
 		if i%2 == 0 && isVowel(char) {
 			vowelCount++
 		}
 	}
 
-	// Check if the vowel count is even
 	return (vowelCount%2 == 0 && vowelCount != 0)
 }
 
@@ -101,7 +97,7 @@ func CMMDCNumere(input []string) int {
 	}
 
 	if len(numbers) == 0 {
-		return 0 // No valid numbers to calculate CMMDC
+		return 0
 	}
 
 	divisors := listDivisors(numbers[0])
@@ -175,17 +171,13 @@ func GenereazaParole(input []string) []string {
 
 	var passwords []string
 
-	// Determine the number of passwords (N) between 1 and 10
 	N := rand.Intn(10) + 1
 
 	for i := 0; i < N; i++ {
-		// Determine the length of each password (M) between 5 and 15
 		M := rand.Intn(11) + 5
 
-		// Generate a password of length M
 		password := ""
 		for j := 0; j < M; j++ {
-			// Choose a random character from the input
 			char := input[rand.Intn(len(input))]
 
 			password += char

@@ -7,7 +7,6 @@ import (
 	"net/http"
 )
 
-// CallAPI sends a POST request to the specified URL with the given data.
 func CallAPI(url string, data []string, name string) ([]string, error) {
 	fmt.Printf("Client %s Conectat\n", name)
 	jsonData, err := json.Marshal(data)
@@ -32,7 +31,6 @@ func CallAPI(url string, data []string, name string) ([]string, error) {
 
 	return output, nil
 }
-
 
 func CallAPIInt(url string, data []int, name string) ([]int, error) {
 	fmt.Printf("Client %s Conectat\n", name)
