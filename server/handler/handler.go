@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
 	"tema1/utils"
 )
 
@@ -35,6 +36,14 @@ func GenericHandler(processor StringProcessor) http.HandlerFunc {
 	}
 }
 
+func processInput(input string, wg *sync.WaitGroup, resultChan chan int) {
+	defer wg.Done()
+
+	numarPatratePerfecte := utils.NumarPatratePerfecte([]string{input})
+
+	resultChan <- numarPatratePerfecte
+}
+
 func NumarPatratePerfecteHandler(w http.ResponseWriter, r *http.Request) {
 	var input []string
 
@@ -44,11 +53,28 @@ func NumarPatratePerfecteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Serrver proceseasza datele primite de la client")
-	numarTotalPatratePerfecte := utils.NumarPatratePerfecte(input)
+	fmt.Println("Server proceseaza datele primite de la client")
 
-	response := []string{fmt.Sprintf("%d", numarTotalPatratePerfecte)}
+	var wg sync.WaitGroup
 
+	resultChan := make(chan int, len(input))
+
+	for _, data := range input {
+		wg.Add(1)
+		go processInput(data, &wg, resultChan)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	totalPatratePerfecte := 0
+	for result := range resultChan {
+		totalPatratePerfecte += result
+	}
+
+	response := []string{fmt.Sprintf("%d", totalPatratePerfecte)}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -56,11 +82,20 @@ func NumarPatratePerfecteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
 	fmt.Println("Server trimite ", response, " catre client")
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResponse)
+}
+
+func processBinaryConversion(input string, wg *sync.WaitGroup, resultChan chan int) {
+	defer wg.Done()
+
+	conversionResult := utils.ConversieNumereBinare([]string{input})
+
+	if len(conversionResult) > 0 {
+		resultChan <- conversionResult[0]
+	}
 }
 
 func ConversieNumereBinareHandler(w http.ResponseWriter, r *http.Request) {
@@ -72,17 +107,34 @@ func ConversieNumereBinareHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Serrver proceseasza datele primite de la client")
+	fmt.Println("Server proceseaza datele primite de la client")
 
-	rezultat := utils.ConversieNumereBinare(input)
+	var wg sync.WaitGroup
 
-	response := make([]string, 0)
-	if len(rezultat) > 0 {
-		response = append(response, fmt.Sprintf("%d", rezultat[0]))
+	resultChan := make(chan int, len(input))
+
+	for _, data := range input {
+		wg.Add(1)
+		go processBinaryConversion(data, &wg, resultChan)
 	}
 
-	for _, val := range rezultat[1:] {
-		response = append(response, fmt.Sprintf("%d", val))
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	conversionResults := make([]int, 0)
+	for result := range resultChan {
+		conversionResults = append(conversionResults, result)
+	}
+
+	response := make([]string, len(conversionResults))
+	if len(conversionResults) > 0 {
+		response[0] = fmt.Sprintf("%d", conversionResults[0])
+	}
+
+	for i, val := range conversionResults[1:] {
+		response[i+1] = fmt.Sprintf("%d", val)
 	}
 
 	responseJSON, err := json.Marshal(response)
@@ -97,6 +149,14 @@ func ConversieNumereBinareHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseJSON)
 }
 
+func processNumarCuvinteVocalePare(input string, wg *sync.WaitGroup, resultChan chan int) {
+	defer wg.Done()
+
+	numarCuvinteVocalePare := utils.NumarCuvinteVocalePare([]string{input})
+
+	resultChan <- numarCuvinteVocalePare
+}
+
 func NumarCuvinteVocalePareHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Server a primit request de la client")
 
@@ -105,12 +165,29 @@ func NumarCuvinteVocalePareHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	
-	fmt.Println("Serrver proceseasza datele primite de la client")
 
-	count := utils.NumarCuvinteVocalePare(input)
-	
-	response := []string{fmt.Sprintf("%d", count)}
+	fmt.Println("Server proceseaza datele primite de la client")
+
+	var wg sync.WaitGroup
+
+	resultChan := make(chan int, len(input))
+
+	for _, data := range input {
+		wg.Add(1)
+		go processNumarCuvinteVocalePare(data, &wg, resultChan)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	totalNumarCuvinteVocalePare := 0
+	for result := range resultChan {
+		totalNumarCuvinteVocalePare += result
+	}
+
+	response := []string{fmt.Sprintf("%d", totalNumarCuvinteVocalePare)}
 
 	responseJSON, err := json.Marshal(response)
 	if err != nil {
@@ -137,7 +214,6 @@ func CMMDCNumereHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Serrver proceseasza datele primite de la client")
 
 	cmmdc := utils.CMMDCNumere(input)
-
 
 	response := []string{fmt.Sprintf("%d", cmmdc)}
 
@@ -166,7 +242,6 @@ func FiltreazaParoleHandler(w http.ResponseWriter, r *http.Request) {
 
 	validPasswords := utils.FiltreazaParole(input)
 
-
 	responseJSON, err := json.Marshal(validPasswords)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -190,7 +265,6 @@ func GenereazaParoleHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Serrver proceseasza datele primite de la client")
 	passwords := utils.GenereazaParole(input)
-
 
 	responseJSON, err := json.Marshal(passwords)
 	if err != nil {
@@ -218,7 +292,6 @@ func SumaInverselorHandler(w http.ResponseWriter, r *http.Request) {
 
 	suma := utils.SumaInverselor(input)
 
-	// Prepare the response array with the sum
 	response := []int{suma}
 
 	responseJSON, err := json.Marshal(response)
